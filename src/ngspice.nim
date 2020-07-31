@@ -316,7 +316,7 @@ proc ngSpiceCirc*(circarray: seq[string],
 proc ngSpiceAllVecs_Impl(pltname: cstring): cstringArray
   {.importc("ngSpice_AllVecs"), header(hdr).}
 
-proc ngSpiceAllVecs(pltname: string): seq[string] =
+proc ngSpiceAllVecs*(pltname: string): seq[string] =
   ## Get vector names associated with plot
   let cpltname = allocCStringArray([pltname])
   let tmp = ngSpiceAllVecs_Impl(cpltname[0])
@@ -335,7 +335,7 @@ proc ngSpiceCurPlot*(): string =
 proc ngGet_Vec_Info_Impl(plotvecname: cstring): ptr NGVectorInfo_Impl
   {.importc("ngGet_Vec_Info"), header(hdr).}
 
-proc ngGetVecInfo(plotvecname: string): NGVectorInfo =
+proc ngGetVecInfo*(plotvecname: string): NGVectorInfo =
   let cplotvecname = allocCStringArray([plotvecname])
   let impl = ngGet_Vec_Info_Impl(cplotvecname[0])
   result = impl[]
@@ -347,32 +347,3 @@ proc ngSpiceCurVectorsR*(): seq[(string, seq[float])] =
   for vec in ngSpiceAllVecs(plt):
     result.add((vec, ngGetVecInfo(plt & "." & vec).realdata))
   discard
-
-
-when isMainModule:
-  ngspiceInit(
-    printfcn = (proc(msg: string, a2: int): int = echo "@ ", msg).addPtr(),
-    statfcn = (proc(msg: string, a2: int): int = echo "# ", msg).addPtr(),
-    sdata =
-      proc(vdata: VecValuesAll, a2: int, a3: int, a4: pointer): int =
-        echo &"Porcessed {vdata.vecindex}/{vdata.veccount} vectors"
-  )
-
-  ngSpiceCirc(
-    @[
-      "V1 0 1 5",
-      "V2 0 2 5",
-      "R1 0 1 10",
-      "R2 0 2 10",
-      ".dc v1 0 5 1"
-    ]
-  )
-
-  ngSpice_Command("run");
-
-  let cp = ngSpiceCurPlot()
-  for vec in ngSpiceAllVecs(cp):
-    let res = ngGetVecInfo(cp & "." & vec)
-    echo vec, ":  ", res.realdata
-
-  echo "done"

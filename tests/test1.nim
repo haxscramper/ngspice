@@ -1,12 +1,31 @@
-# This is just an example to get you started. You may wish to put all of your
-# tests into a single file, or separate them into multiple `test1`, `test2`
-# etc. files (better names are recommended, just make sure the name starts with
-# the letter 't').
-#
-# To run these tests, simply execute `nimble test`.
-
-import unittest
-
+import unittest, strformat
 import ngspice
-test "can add":
-  check add(5, 5) == 10
+
+suite "Api test":
+  test "can add":
+    ngspiceInit(
+      printfcn = (proc(msg: string, a2: int): int = echo "@ ", msg).addPtr(),
+      statfcn = (proc(msg: string, a2: int): int = echo "# ", msg).addPtr(),
+      sdata =
+        proc(vdata: VecValuesAll, a2: int, a3: int, a4: pointer): int =
+          echo &"Processed {vdata.vecindex}/{vdata.veccount} vectors"
+    )
+
+    ngSpiceCirc(
+      @[
+        "V1 0 1 5",
+        "V2 0 2 5",
+        "R1 0 1 10",
+        "R2 0 2 10",
+        ".dc v1 0 5 1"
+      ]
+    )
+
+    ngSpice_Command("run");
+
+    let cp = ngSpiceCurPlot()
+    for vec in ngSpiceAllVecs(cp):
+      let res = ngGetVecInfo(cp & "." & vec)
+      echo vec, ":  ", res.realdata
+
+    echo "done"
