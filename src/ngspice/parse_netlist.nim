@@ -13,11 +13,11 @@ import sequtils, strformat
 import shell
 import posix_utils
 import ngspice
-import hmisc/defensive
-
+# import hmisc/defensive
+import hmisc/hexceptions
 
 const srcd = currentSourcePath().parentDir()
-initDefense()
+# initDefense()
 
 # type
 #   ExternalSourceError = ref object of CatchableError
