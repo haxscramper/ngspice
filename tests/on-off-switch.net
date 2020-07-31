@@ -1,0 +1,18 @@
+* On-off switch
+
+
+.subckt on_off_switch 1 2
+.param state=0
+
+.model switch_model sw vt=1 vh=0.2 ron=1 roff=1e12
+
+
+S1 1 2 n001 0 switch_model
+
+.if (state == 0)
+V1 n001 0 0
+.else
+V1 n001 0 5
+.endif
+
+.ends on_off_switch

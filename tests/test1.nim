@@ -1,4 +1,4 @@
-import unittest, strformat
+import unittest, strformat, os, strutils
 import ngspice
 
 suite "Api test":

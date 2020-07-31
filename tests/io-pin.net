@@ -1,0 +1,31 @@
+* NGSpice simulation io pin
+
+.subckt pin 1
+.param state=0
+
+.if (state == 0)
+* write LOW
+
+* Vxxx 1 0 0
+Rxxx 1 0 1
+
+.elseif (state == 1)
+* write HIGH
+Vxxx 1 0 5
+.elseif (state == 2)
+* INPUT
+Rxxx 1 0 1e18
+.elseif (state == 3)
+* INPUT_PULLUP
+Rxxx 1 0 1e18
+
+Rpullup 2 0 1e12
+Vpullup 2 1 5
+.elseif (state == 4)
+* INPUT_PULLDOWN
+
+Rxxx 1 0 1e18
+Rpulldown 1 0 20K
+.endif
+
+.ends pin
