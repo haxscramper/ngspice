@@ -129,19 +129,25 @@ type
     a1: ptr VecValuesAll_Impl, a2: cint, a3: cint, a4: pointer): cint {.cdecl.}
 
   NGSendDataCb = proc(
-    a1: VecValuesAll, a2: int, a3: int, a4: pointer): int
+    a1: VecValuesAll, a2: int, a3: int, a4: pointer): int ## called
+  ## After simulation of new vector is completed. First argument is
+  ## array of *all* simulated vectors, `a2` is new vector index.
 
   NGSendCharCb_Impl = proc(a1: cstring, a2: cint, a3: pointer): cint {.cdecl.}
-  NGSendCharCb = proc(a1: string, a2: int, a3: pointer): int
+  NGSendCharCb = proc(a1: string, a2: int, a3: pointer): int ## pass
+  ## stdout from ngspice.
 
   NGSendStatCb_Impl = proc(a1: cstring, a2: cint, a3: pointer): cint {.cdecl.}
-  NGSendStatCb = proc(a1: string, a2: int, a3: pointer): int
+  NGSendStatCb = proc(a1: string, a2: int, a3: pointer): int ## send
+  ## simulation progress statistics. First argument is a simulation
+  ## status and value (in percent) to be sent to caller
 
   NGControlledExitCb_Impl = proc(
     a1: cint, a2: bool, a3: bool, a4: cint, a5: pointer): cint {.cdecl.}
 
   NGControlledExitCb = proc(
-    a1: int, a2: bool, a3: bool, a4: int, a5: pointer): int
+    a1: int, a2: bool, a3: bool, a4: int, a5: pointer): int ## ngspice
+  ## Requested exit
 
   NGSendInitDataCb_Impl = proc(
     a1: ptr NGVecInfo_Impl, a2: cint, a3: pointer): cint {.cdecl.}
@@ -218,8 +224,9 @@ proc ngSpiceInit*(
   sdata: NGSendDataCb = ngDefaultSendData,
   sinitdata: NGSendInitDataCb = ngDefaultSendInitData,
   bgtrun: NGBGThreadRunningCb = ngNoMultithreading,
-  userData: pointer = nil
-                     ) =
+  userData: pointer = nil) =
+  ## Initialize ngspice library using set of callback functions. For
+  ## each callback function see documentation of corresponding type.
 
   ngSpiceInit_Impl(
     printfcn = (
@@ -294,7 +301,7 @@ proc ngSpiceCommand_Impl(
   a1: cstring): cint {.importc("ngSpice_Command"), header(hdr).}
 
 proc ngspiceCommand*(arg: string): int {.discardable.} =
-  ## Run ngspice command
+  ## Execute ngspice `Interactive interpreter<http://ngspice.sourceforge.net/docs/ngspice-html-manual/manual.xhtml#chap_Interactive_Interpreter>`_ command
   var str = allocCStringArray([arg])
   result = ngSpiceCommand_Impl(a1 = str[0])
   deallocCStringArray(str)
@@ -305,6 +312,7 @@ proc ngSpice_Circ_Impl(circarray: cstringArray): cint
 proc ngSpiceCirc*(circarray: seq[string],
   header: string = "Circuit simulation", footer: string = ".end"
                 ): int {.discardable.} =
+  ## Construct ngspice circuit description from netlist
 
   # arr[circarray.len + 3] = cast[cstring](0)
   let input = @[header] & circarray & @[footer] & @[""]

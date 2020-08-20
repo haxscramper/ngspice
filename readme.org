@@ -1,0 +1,101 @@
+#+title: readme
+
+Nim wrapper for ngspice library - simulation of analog circuits.
+
+C api for ngspice is based on callbacks - you provide several
+functions and textual description of the netlist. Callback functions
+are used for reporting simulation progress.
+
+
+* nim API
+
+ngspice provides two APis - synchronous and asynchronous. Only first
+one is implemented.
+
+* Netlist syntax description
+
+For full documentation of ngspice netlist syntax see [[http://ngspice.sourceforge.net/docs/ngspice-html-manual/manual.xhtml][manual]]. Only
+brief outline is presented here.
+
+If you are familliar with spice/ngspice circuit netlist you can skip
+this section.
+
+Ngspice netlist is a textual description of circuit graph. In most
+cases each element is put on it's own line, in form of
+~<ElementType><Idx> <connector-1> <connector-2> <... arguments ...>~.
+For example ~5V~ voltage source between terminals ~0~ and ~1~ will be
+written as ~V1 0 1 5~.
+
+* Use example
+
+#+begin_src nim
+import ngspice
+import strformat
+
+ngspiceInit(
+  printfcn = (proc(msg: string, a2: int): int = echo "@ ", msg).addPtr(),
+  statfcn = (proc(msg: string, a2: int): int = echo "# ", msg).addPtr(),
+  sdata =
+    proc(vdata: VecValuesAll, a2: int, a3: int, a4: pointer): int =
+      echo &"Processed {vdata.vecindex}/{vdata.veccount} vectors"
+)
+
+ngSpiceCirc(
+  @[
+    "V1 0 1 5",
+    "V2 0 2 5",
+    "R1 0 1 10",
+    "R2 0 2 10",
+    ".dc v1 0 5 1"
+  ]
+)
+
+ngSpice_Command("run");
+
+let cp = ngSpiceCurPlot()
+for vec in ngSpiceAllVecs(cp):
+  let res = ngGetVecInfo(cp & "." & vec)
+  echo vec, ":  ", res.realdata
+
+echo "done"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+@ stdout ******
+@ stdout ** ngspice-32 shared library
+@ stdout ** Creation Date: Tue Jun 16 21:35:13 UTC 2020
+@ stdout ******
+# Source Deck
+@ stdout Circuit: circuit simulation
+# Prepare Deck
+# Circuit2
+# Circuit2: 12.5%
+# Circuit2: 25.0%
+# Circuit2: 37.5%
+# Circuit2: 50.0%
+# Circuit2: 62.5%
+# Circuit2: 75.0%
+# Circuit2: 87.5%
+@ stdout Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+# Device Setup
+Processed 0/5 vectors
+# dc: 20.0%
+Processed 1/5 vectors
+# dc: 40.0%
+Processed 2/5 vectors
+# dc: 60.0%
+Processed 3/5 vectors
+# dc: 80.0%
+Processed 4/5 vectors
+# --ready--
+Processed 5/5 vectors
+# --ready--
+@ stdout No. of Data Rows : 6
+v1#branch:  @[0.0, -0.1, -0.2, -0.3, -0.4, -0.5]
+v2#branch:  @[-0.5, -0.5, -0.5, -0.5, -0.5, -0.5]
+V(2):  @[-5.0, -5.0, -5.0, -5.0, -5.0, -5.0]
+V(1):  @[0.0, -1.0, -2.0, -3.0, -4.0, -5.0]
+v-sweep:  @[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+done
+#+end_example
