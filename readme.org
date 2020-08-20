@@ -14,50 +14,60 @@ one is implemented.
 
 * Netlist syntax description
 
-For full documentation of ngspice netlist syntax see [[http://ngspice.sourceforge.net/docs/ngspice-html-manual/manual.xhtml][manual]]. Only
-brief outline is presented here.
+For full documentation of ngspice netlist syntax see [[http://ngspice.sourceforge.net/docs/ngspice-html-manual/manual.xhtml][manual]] and
+[[http://ngspice.sourceforge.net/docs/ngspice-html-manual/manual.xhtml#magicparlabel-28301][glossary]] for list of terms. Only brief outline is presented here.
 
 If you are familliar with spice/ngspice circuit netlist you can skip
 this section.
 
 Ngspice netlist is a textual description of circuit graph. In most
-cases each element is put on it's own line, in form of
+cases each element (card) is put on it's own line, in form of
 ~<ElementType><Idx> <connector-1> <connector-2> <... arguments ...>~.
 For example ~5V~ voltage source between terminals ~0~ and ~1~ will be
 written as ~V1 0 1 5~.
 
+To perform actual simulation you need to add simulation command in the
+netlist. For example, If I want to perform ~DC~ [[http://ngspice.sourceforge.net/docs/ngspice-html-manual/manual.xhtml#subsec__DC__DC_Transfer][simulation]] of voltage
+source ~V1~, with voltage in range ~[0-5]~, step ~1~ I will need to
+add ~.dc v1 0 5 1~.
+
 * Use example
 
 #+begin_src nim
-import ngspice
-import strformat
+  import ngspice
+  import strformat
 
-ngspiceInit(
-  printfcn = (proc(msg: string, a2: int): int = echo "@ ", msg).addPtr(),
-  statfcn = (proc(msg: string, a2: int): int = echo "# ", msg).addPtr(),
-  sdata =
-    proc(vdata: VecValuesAll, a2: int, a3: int, a4: pointer): int =
-      echo &"Processed {vdata.vecindex}/{vdata.veccount} vectors"
-)
+  ngspiceInit(
+    printfcn = ( # Callback for printing regular output of the simulation
+      proc(msg: string, a2: int): int = echo "@ ", msg
+    ).addPtr(),
+    statfcn = ( # Callback for printing simulation progress
+      proc(msg: string, a2: int): int = echo "# ", msg
+    ).addPtr(),
+    sdata = # Callback after simulation of new vector completed
+      proc(vdata: VecValuesAll, a2: int, a3: int, a4: pointer): int =
+        echo &"Processed {vdata.vecindex}/{vdata.veccount} vectors"
+  )
 
-ngSpiceCirc(
-  @[
-    "V1 0 1 5",
-    "V2 0 2 5",
-    "R1 0 1 10",
-    "R2 0 2 10",
-    ".dc v1 0 5 1"
-  ]
-)
+  ngSpiceCirc(
+    @[ # terminal ~0~ is used as ground
+      "V1 0 1 5", # Voltage source
+      "V2 0 2 5",
+      "R1 0 1 10", # Resistor
+      "R2 0 2 10",
+      ".dc v1 0 5 1" # DC simulation in range [0-5] volts
+    ]
+  )
 
-ngSpice_Command("run");
+  ngSpice_Command("run"); # Run execute command to run simulation
 
-let cp = ngSpiceCurPlot()
-for vec in ngSpiceAllVecs(cp):
-  let res = ngGetVecInfo(cp & "." & vec)
-  echo vec, ":  ", res.realdata
+  let cp: string = ngSpiceCurPlot() # Get name of current simulation
+                                    # plot (collection of
+  for vec in ngSpiceAllVecs(cp):
+    let res: NGVectorInfo = ngGetVecInfo(cp & "." & vec)
+    echo vec, ":  ", res.realdata # voltage between group and each terminal
 
-echo "done"
+  echo "done"
 #+end_src
 
 #+RESULTS:

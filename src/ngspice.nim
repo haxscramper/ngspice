@@ -344,6 +344,8 @@ proc ngGet_Vec_Info_Impl(plotvecname: cstring): ptr NGVectorInfo_Impl
   {.importc("ngGet_Vec_Info"), header(hdr).}
 
 proc ngGetVecInfo*(plotvecname: string): NGVectorInfo =
+  ## `plotvecname` - string name of the vector in form of
+  ## `<parent-plot>.<vector-name>`.
   let cplotvecname = allocCStringArray([plotvecname])
   let impl = ngGet_Vec_Info_Impl(cplotvecname[0])
   result = impl[]
