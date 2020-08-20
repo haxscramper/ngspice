@@ -21,7 +21,7 @@ If you are familliar with spice/ngspice circuit netlist you can skip
 this section.
 
 Ngspice netlist is a textual description of circuit graph. In most
-cases each element (card) is put on it's own line, in form of
+cases each element (card) is put on its own line, in form of
 ~<ElementType><Idx> <connector-1> <connector-2> <... arguments ...>~.
 For example ~5V~ voltage source between terminals ~0~ and ~1~ will be
 written as ~V1 0 1 5~.
