@@ -109,3 +109,12 @@ V(1):  @[0.0, -1.0, -2.0, -3.0, -4.0, -5.0]
 v-sweep:  @[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
 done
 #+end_example
+
+* Contribution & development
+
+Todo
+- [ ] add documentation for static wrappers for netlist description
+- [ ] Document raspberry pi simulation unit test
+
+If you have any question about implementation or usage feel free to
+join my [[https://discord.gg/hjfYJCU][discord server]].
