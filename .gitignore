@@ -1,3 +1,4 @@
 tests/*
 src/*.css
 !tests/*.nim
+nimdoc.cfg
