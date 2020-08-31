@@ -2,12 +2,27 @@
 
 Nim wrapper for ngspice library - simulation of analog circuits.
 
+* Installation
+
+#+begin_src bash
+nimble install ngspice
+#+end_src
+
+This library is a wrapper for ngspice C library - you need to have it
+installed.
+
+* Links
+
+- [[https://github.com/haxscramper/ngspice][github]]
+- [[https://haxscramper.github.io/ngspice-doc/src/ngspice.html][api reference]]
+- [[https://discord.gg/hjfYJCU][discord server]]
+- [[https://nimble.directory/pkg/ngspice][nimble package]]
+
+* nim API
+
 C api for ngspice is based on callbacks - you provide several
 functions and textual description of the netlist. Callback functions
 are used for reporting simulation progress.
-
-
-* nim API
 
 ngspice provides two APis - synchronous and asynchronous. Only first
 one is implemented.
